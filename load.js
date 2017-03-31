@@ -23,7 +23,54 @@ page.onResourceRequested = function(requestData, request) {
 page.open(address, function(status) {
     if (status === 'success') {
         
-        fs.write('players.html' , page.content, 'w');
+        function textContent_to_csvFromat(text){
+            var final =[];
+            var a= "";
+            for (var i = 0 ; i < text.length; i=i+1){
+                
+            
+                if (text[i] === "."){
+                    a = a.concat(text[i]);
+                    a = a.concat(text[i+1]);
+                    i = i + 1;
+                    if (final.length == 12){
+                        final.push(a)
+                        return final;
+                    }
+                    final.push(a);
+                    a ="";
+                }
+                else{
+                    a = a.concat(text[i]);
+                }
+            }
+            return final;            
+        };
+
+        var player_Name = page.evaluate(function(){
+            return document.getElementById('playersCompared').textContent;
+        })
+
+        var rh_exit_velocity = page.evaluate(function() {
+            var text = document.getElementById('zone_chart_rh_exit_velocity').textContent;
+            return text;
+        });
+        var lh_exit_velocity = page.evaluate(function() {
+            var text = document.getElementById('zone_chart_lh_exit_velocity').textContent;
+            return text;
+        });        
+
+        // console.log(rh_exit_velocity);
+        var rightHand =   player_Name.replace(/^\s+|\s+$/gm,'')  +','+ textContent_to_csvFromat(rh_exit_velocity) ; 
+        var leftHand =  player_Name.replace(/^\s+|\s+$/gm,'')  +','+  textContent_to_csvFromat(lh_exit_velocity) ;
+
+        // console.log( player_Name.replace(/^\s+|\s+$/gm,'')  +','+ rightHand );
+        // console.log( player_Name.replace(/^\s+|\s+$/gm,'')  +','+ leftHand );
+
+        fs.write('players.html' ,rightHand, 'a');
+
+        fs.write('players.html' ,leftHand, 'a');
+
         phantom.exit();
     } else {
         console.log('Unable to load the address!');
